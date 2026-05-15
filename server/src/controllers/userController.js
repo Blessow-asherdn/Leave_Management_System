@@ -1,4 +1,4 @@
-import { createUserService,getAllUsersService,updateUserService,deactivateUserService } from "../services/userService.js";
+import { createUserService,getAllUsersService,updateUserService,toggleUserStatusService } from "../services/userService.js";
 
 export const createUser = async (req, res) => {
   try {
@@ -53,19 +53,27 @@ export const updateUser = async (req, res) => {
   }
 };
 
-export const deactivateUser = async (req, res) => {
-  try {
-    const user = await deactivateUserService(req.params.id);
+export const toggleUserStatus =
+  async (req, res) => {
+    try {
+      const user =
+        await toggleUserStatusService(
+          req.params.id
+        );
 
-    res.status(200).json({
-      success: true,
-      message: "User deactivated successfully",
-      data: user,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+      res.status(200).json({
+        message:
+          user.isActive
+            ? "User activated successfully"
+            : "User deactivated successfully",
+        user,
+      });
+    } catch (error) {
+      console.log(error);
+
+      res.status(500).json({
+        message:
+          error.message,
+      });
+    }
+  };

@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema(
       default: "employee",
     },
 
+    leaveBalance: {
+      type: Number,
+      default: 20,
+    },
+    
     isActive: {
       type: Boolean,
       default: true,

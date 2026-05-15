@@ -16,3 +16,21 @@ export const getMyLeaves = async () => {
 
   return response.data;
 };
+
+export const getAllLeaves = async () => {
+  const response = await api.get("/leaves");
+
+  return response.data;
+};
+
+export const updateLeaveStatus = async (
+  id,
+  status
+) => {
+  const response = await api.put(
+    `/leaves/${id}/status`,
+    { status }
+  );
+
+  return response.data;
+};

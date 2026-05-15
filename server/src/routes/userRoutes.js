@@ -1,5 +1,5 @@
 import express from "express";
-import { createUser,getAllUsers,updateUser,deactivateUser } from "../controllers/userController.js";
+import { createUser,getAllUsers,updateUser,toggleUserStatus } from "../controllers/userController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import roleMiddleware from "../middlewares/roleMiddleware.js";
 
@@ -26,11 +26,10 @@ router.put(
   updateUser
 );
 
-router.put(
-  "/:id/deactivate",
-  authMiddleware,
-  roleMiddleware("admin"),
-  deactivateUser
+
+router.patch(
+  "/toggle-status/:id",
+  toggleUserStatus
 );
 
 export default router;

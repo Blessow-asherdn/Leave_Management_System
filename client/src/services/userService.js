@@ -6,10 +6,18 @@ export const getAllUsers = async () => {
   return response.data;
 };
 
-export const deactivateUser = async (id) => {
-  const response = await api.put(
-    `/users/${id}/deactivate`
+export const createUser = async (data) => {
+  const response = await api.post(
+    "/users",
+    data
   );
 
   return response.data;
 };
+
+export const toggleUserStatus =
+  async (id) => {
+    return api.patch(
+      `/users/toggle-status/${id}`
+    );
+  };

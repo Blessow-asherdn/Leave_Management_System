@@ -1,12 +1,16 @@
 import { useState } from "react";
 
-const CreateUserForm = ({ onCreate }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "employee",
-  });
+const CreateUserForm = ({
+  onCreate,
+  loading,
+}) => {
+  const [formData, setFormData] =
+    useState({
+      name: "",
+      email: "",
+      password: "",
+      role: "employee",
+    });
 
   const handleChange = (e) => {
     setFormData({
@@ -15,10 +19,10 @@ const CreateUserForm = ({ onCreate }) => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    await onCreate(formData);
+    onCreate(formData);
 
     setFormData({
       name: "",
@@ -29,15 +33,9 @@ const CreateUserForm = ({ onCreate }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white p-6 rounded-xl shadow-md mb-8"
-    >
-      <h2 className="text-2xl font-bold mb-6">
-        Create User
-      </h2>
+    <form onSubmit={handleSubmit}>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <input
           type="text"
           name="name"
@@ -45,7 +43,7 @@ const CreateUserForm = ({ onCreate }) => {
           value={formData.name}
           onChange={handleChange}
           required
-          className="border border-gray-300 rounded-lg px-4 py-3"
+          className="w-full border border-gray-300 rounded-xl px-5 py-4 text-black text-lg focus:outline-none focus:ring-2 focus:ring-black"
         />
 
         <input
@@ -55,7 +53,7 @@ const CreateUserForm = ({ onCreate }) => {
           value={formData.email}
           onChange={handleChange}
           required
-          className="border border-gray-300 rounded-lg px-4 py-3"
+          className="w-full border border-gray-300 rounded-xl px-5 py-4 text-black text-lg focus:outline-none focus:ring-2 focus:ring-black"
         />
 
         <input
@@ -65,14 +63,14 @@ const CreateUserForm = ({ onCreate }) => {
           value={formData.password}
           onChange={handleChange}
           required
-          className="border border-gray-300 rounded-lg px-4 py-3"
+          className="w-full border border-gray-300 rounded-xl px-5 py-4 text-black text-lg focus:outline-none focus:ring-2 focus:ring-black"
         />
 
         <select
           name="role"
           value={formData.role}
           onChange={handleChange}
-          className="border border-gray-300 rounded-lg px-4 py-3"
+          className="w-full border border-gray-300 rounded-xl px-5 py-4 text-black text-lg focus:outline-none focus:ring-2 focus:ring-black"
         >
           <option value="employee">
             Employee
@@ -86,9 +84,16 @@ const CreateUserForm = ({ onCreate }) => {
 
       <button
         type="submit"
-        className="mt-6 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition"
+        disabled={loading}
+        className={`mt-8 px-8 py-4 rounded-xl text-lg font-semibold text-white transition ${
+          loading
+            ? "bg-gray-500 cursor-not-allowed"
+            : "bg-black hover:bg-gray-800"
+        }`}
       >
-        Create User
+        {loading
+          ? "Creating..."
+          : "Create User"}
       </button>
     </form>
   );

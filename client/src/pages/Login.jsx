@@ -1,9 +1,7 @@
 import { useState, useContext } from "react";
-
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 import { AuthContext } from "../context/AuthContext";
-
 import { loginUser } from "../services/authService";
 
 const Login = () => {
@@ -16,7 +14,8 @@ const Login = () => {
     password: "",
   });
 
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -29,72 +28,109 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      setError("");
+      setLoading(true);
 
-      const response = await loginUser(formData);
+      const response = await loginUser(
+        formData
+      );
+
+      toast.success("Login successful");
 
       login(response.data);
 
-      if (response.data.user.role === "admin") {
+      if (
+        response.data.user.role ===
+        "admin"
+      ) {
         navigate("/admin");
       } else {
         navigate("/employee");
       }
     } catch (error) {
-      setError(
+      toast.error(
         error.response?.data?.message ||
           "Login failed"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md"
-      >
-        <h2 className="text-3xl font-bold text-center mb-6">
-          Leave Management Login
-        </h2>
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col">
+      <nav className="w-full bg-black text-white px-8 py-4 shadow-md">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-wide">
+            Leave Management System
+          </h1>
 
-        {error && (
-          <p className="text-red-500 mb-4 text-sm">
-            {error}
+          <p className="text-gray-300 text-sm">
+            Employee Portal
           </p>
-        )}
-
-        <div className="mb-4">
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-          />
         </div>
+      </nav>
 
-        <div className="mb-6">
-          <input
-            type="password"
-            name="password"
-            placeholder="Enter password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-          />
+      <div className="flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-black mb-2">
+              Login
+            </h2>
+
+            <p className="text-gray-500">
+              Sign in to continue
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-5">
+              <label className="block text-black font-semibold mb-2">
+                Email
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-black transition"
+              />
+            </div>
+
+            <div className="mb-7">
+              <label className="block text-black font-semibold mb-2">
+                Password
+              </label>
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-black transition"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-3 rounded-xl font-semibold text-white transition duration-300 ${
+                loading
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-black hover:bg-gray-800"
+              }`}
+            >
+              {loading
+                ? "Logging in..."
+                : "Login"}
+            </button>
+          </form>
         </div>
-
-        <button
-          type="submit"
-          className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
-        >
-          Login
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

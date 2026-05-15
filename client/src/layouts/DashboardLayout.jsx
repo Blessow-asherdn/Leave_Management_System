@@ -1,13 +1,14 @@
 import { useContext } from "react";
-
 import { useNavigate } from "react-router-dom";
-
 import { AuthContext } from "../context/AuthContext";
 
-const DashboardLayout = ({ children }) => {
-  const { user, logout } = useContext(AuthContext);
-
+const DashboardLayout = ({
+  children,
+}) => {
   const navigate = useNavigate();
+
+  const { user, logout } =
+    useContext(AuthContext);
 
   const handleLogout = () => {
     logout();
@@ -17,27 +18,30 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-black text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <div>
-          <h1 className="text-xl font-bold">
+      <nav className="w-full bg-black text-white px-8 py-4 shadow-lg">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-wide">
             Leave Management System
           </h1>
-        </div>
 
-        <div className="flex items-center gap-4">
-          <div className="text-sm">
-            <p>{user?.name}</p>
-            <p className="text-gray-300 capitalize">
-              {user?.role}
-            </p>
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <p className="text-lg font-semibold">
+                {user?.role}
+              </p>
+
+              <p className="text-sm text-gray-400">
+                {user?.name}
+              </p>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="bg-white text-black px-5 py-2 rounded-xl font-semibold hover:bg-gray-200 transition"
+            >
+              Logout
+            </button>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200 transition"
-          >
-            Logout
-          </button>
         </div>
       </nav>
 

@@ -1,6 +1,7 @@
 const UsersTable = ({
   users,
-  onDeactivate,
+  onToggleStatus,
+  deactivatingId,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -62,16 +63,29 @@ const UsersTable = ({
               </td>
 
               <td className="p-4">
-                {user.isActive && (
-                  <button
-                    onClick={() =>
-                      onDeactivate(user._id)
-                    }
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-                  >
-                    Deactivate
-                  </button>
-                )}
+                <button
+                  onClick={() =>
+                    onToggleStatus(user._id)
+                  }
+                  disabled={
+                    deactivatingId === user._id
+                  }
+                  className={`px-4 py-2 rounded-xl text-white font-medium transition ${
+                    user.isActive
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-green-500 hover:bg-green-600"
+                  } ${
+                    deactivatingId === user._id
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {deactivatingId === user._id
+                    ? "Updating..."
+                    : user.isActive
+                    ? "Deactivate"
+                    : "Activate"}
+                </button>
               </td>
             </tr>
           ))}

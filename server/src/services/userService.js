@@ -1,72 +1,120 @@
 import bcrypt from "bcryptjs";
+
 import User from "../models/users.js";
 
-export const createUserService = async (userData) => {
-  const { name, email, password, role } = userData;
+import LeaveBalance from "../models/LeaveBalance.js";
 
-  const existingUser = await User.findOne({ email });
+export const createUserService =
+  async (userData) => {
+    const {
+      name,
+      email,
+      password,
+      role,
+    } = userData;
 
-  if (existingUser) {
-    throw new Error("User already exists");
-  }
+    const existingUser =
+      await User.findOne({
+        email,
+      });
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+    if (existingUser) {
+      throw new Error(
+        "User already exists"
+      );
+    }
 
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role,
-  });
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
 
-  return {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      leaveBalance:
+        role === "employee"
+          ? 20
+          : 0,
+      isActive: true,
+    });
+
+    if (role === "employee") {
+      const currentYear =
+        new Date().getFullYear();
+
+      await LeaveBalance.create({
+        employee: user._id,
+        year: currentYear,
+        totalLeaves: 20,
+        usedLeaves: 0,
+        remainingLeaves: 20,
+      });
+    }
+
+    return {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      leaveBalance:
+        user.leaveBalance,
+      isActive: user.isActive,
+    };
   };
-};
 
-export const getAllUsersService = async () => {
-  const users = await User.find().select("-password");
+export const getAllUsersService =
+  async () => {
+    const users = await User.find()
+      .select("-password")
+      .sort({
+        createdAt: -1,
+      });
 
-  return users;
-};
+    return users;
+  };
 
-export const updateUserService = async (
-  userId,
-  updateData
-) => {
-  const user = await User.findByIdAndUpdate(
+export const updateUserService =
+  async (
     userId,
-    updateData,
-    {
-      new: true,
-      runValidators: true,
+    updateData
+  ) => {
+    const user =
+      await User.findByIdAndUpdate(
+        userId,
+        updateData,
+        {
+          new: true,
+          runValidators: true,
+        }
+      ).select("-password");
+
+    if (!user) {
+      throw new Error(
+        "User not found"
+      );
     }
-  ).select("-password");
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+    return user;
+  };
 
-  return user;
-};
+export const toggleUserStatusService =
+  async (userId) => {
+    const user =
+      await User.findById(
+        userId
+      );
 
-export const deactivateUserService = async (userId) => {
-  const user = await User.findByIdAndUpdate(
-    userId,
-    {
-      isActive: false,
-    },
-    {
-      new: true,
+    if (!user) {
+      throw new Error(
+        "User not found"
+      );
     }
-  ).select("-password");
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+    user.isActive =
+      !user.isActive;
 
-  return user;
-};
+    await user.save();
+
+    return user;
+  };
