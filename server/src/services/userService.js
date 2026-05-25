@@ -24,6 +24,38 @@ export const createUserService =
       );
     }
 
+    if (password.length < 8) {
+      throw new Error(
+        "Password must contain at least 8 characters"
+      );
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      throw new Error(
+        "At least one uppercase letter is required"
+      );
+    }
+
+    if (!/[a-z]/.test(password)) {
+      throw new Error(
+        "At least one lowercase letter is required"
+      );
+    }
+
+    if (!/[0-9]/.test(password)) {
+      throw new Error(
+        "At least one number is required"
+      );
+    }
+
+    if (
+      !/[@$!%*?&]/.test(password)
+    ) {
+      throw new Error(
+        "At least one special character is required"
+      );
+    }
+
     const hashedPassword =
       await bcrypt.hash(password, 10);
 
@@ -45,10 +77,32 @@ export const createUserService =
 
       await LeaveBalance.create({
         employee: user._id,
+
         year: currentYear,
-        totalLeaves: 20,
-        usedLeaves: 0,
-        remainingLeaves: 20,
+
+        sickLeave: {
+          total: 10,
+          used: 0,
+          remaining: 10,
+        },
+
+        casualLeave: {
+          total: 5,
+          used: 0,
+          remaining: 5,
+        },
+
+        paidLeave: {
+          total: 12,
+          used: 0,
+          remaining: 12,
+        },
+
+        compOff: {
+          total: 0,
+          used: 0,
+          remaining: 0,
+        },
       });
     }
 

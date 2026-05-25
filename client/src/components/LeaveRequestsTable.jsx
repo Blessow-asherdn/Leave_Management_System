@@ -1,6 +1,7 @@
 const LeaveRequestsTable = ({
   leaves,
   onUpdateStatus,
+  updatingLeaveId,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -20,7 +21,15 @@ const LeaveRequestsTable = ({
             </th>
 
             <th className="text-left p-4">
+              Reason
+            </th>
+
+            <th className="text-left p-4">
               Status
+            </th>
+
+            <th className="text-left p-4">
+              Admin Comment
             </th>
 
             <th className="text-left p-4">
@@ -35,15 +44,18 @@ const LeaveRequestsTable = ({
               key={leave._id}
               className="border-b"
             >
-              <td className="p-4">
-                {leave.employee?.name}
+              <td className="p-4 font-medium text-black">
+                {
+                  leave.employee
+                    ?.name
+                }
               </td>
 
-              <td className="p-4">
+              <td className="p-4 text-black">
                 {leave.leaveType}
               </td>
 
-              <td className="p-4">
+              <td className="p-4 text-black">
                 {new Date(
                   leave.fromDate
                 ).toLocaleDateString()}
@@ -53,9 +65,13 @@ const LeaveRequestsTable = ({
                 ).toLocaleDateString()}
               </td>
 
+              <td className="p-4 text-gray-700 max-w-xs break-words">
+                {leave.reason}
+              </td>
+
               <td className="p-4">
                 <span
-                  className={`px-3 py-1 rounded-full text-sm ${
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
                     leave.status ===
                     "Approved"
                       ? "bg-green-100 text-green-700"
@@ -69,34 +85,35 @@ const LeaveRequestsTable = ({
                 </span>
               </td>
 
-              <td className="p-4 flex gap-2">
-                {leave.status ===
-                  "Pending" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        onUpdateStatus(
-                          leave._id,
-                          "Approved"
-                        )
-                      }
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-                    >
-                      Approve
-                    </button>
+              <td className="p-4 text-gray-700 max-w-xs">
+                {leave.adminComment ||
+                  "-"}
+              </td>
 
-                    <button
-                      onClick={() =>
-                        onUpdateStatus(
-                          leave._id,
-                          "Rejected"
-                        )
-                      }
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-                    >
-                      Reject
-                    </button>
-                  </>
+              <td className="p-4">
+                {leave.status ===
+                "Pending" ? (
+                  <button
+                    onClick={() =>
+                      onUpdateStatus(
+                        leave
+                      )
+                    }
+                    disabled={
+                      updatingLeaveId ===
+                      leave._id
+                    }
+                    className="bg-black text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition"
+                  >
+                    {updatingLeaveId ===
+                    leave._id
+                      ? "Updating..."
+                      : "Take Action"}
+                  </button>
+                ) : (
+                  <span className="text-gray-400 text-sm">
+                    Completed
+                  </span>
                 )}
               </td>
             </tr>

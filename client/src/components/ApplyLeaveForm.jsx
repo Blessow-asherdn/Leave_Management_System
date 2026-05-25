@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { toast } from "react-toastify";
 
 const ApplyLeaveForm = ({
@@ -7,15 +8,20 @@ const ApplyLeaveForm = ({
 }) => {
   const [formData, setFormData] =
     useState({
-      leaveType: "Casual",
+      leaveType:
+        "Casual Leave",
+
       fromDate: "",
+
       toDate: "",
+
       reason: "",
     });
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
+
       [e.target.name]:
         e.target.value,
     });
@@ -57,9 +63,13 @@ const ApplyLeaveForm = ({
     onApply(formData);
 
     setFormData({
-      leaveType: "Casual",
+      leaveType:
+        "Casual Leave",
+
       fromDate: "",
+
       toDate: "",
+
       reason: "",
     });
   };
@@ -79,16 +89,20 @@ const ApplyLeaveForm = ({
           onChange={handleChange}
           className="w-full border border-gray-300 rounded-2xl px-5 py-4 text-black bg-white focus:outline-none focus:ring-2 focus:ring-black"
         >
-          <option value="Casual">
+          <option value="Casual Leave">
             Casual Leave
           </option>
 
-          <option value="Sick">
+          <option value="Sick Leave">
             Sick Leave
           </option>
 
-          <option value="Paid">
+          <option value="Paid Leave">
             Paid Leave
+          </option>
+
+          <option value="Comp Off">
+            Comp Off
           </option>
         </select>
       </div>

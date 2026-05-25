@@ -23,14 +23,50 @@ export const getAllLeaves = async () => {
   return response.data;
 };
 
-export const updateLeaveStatus = async (
-  id,
-  status
-) => {
-  const response = await api.put(
-    `/leaves/${id}/status`,
-    { status }
-  );
+export const updateLeaveStatus =
+  async (
+    id,
+    status,
+    adminComment
+  ) => {
+    const response =
+      await api.put(
+        `/leaves/${id}/status`,
+        {
+          status,
+          adminComment,
+        }
+      );
 
-  return response.data;
-};
+    return response.data;
+  };
+
+export const grantCompOff =
+  (employeeId, days) => {
+    return api.patch(
+      `/leaves/comp-off/${employeeId}`,
+      { days }
+    );
+  };
+
+export const getAllLeaveBalances =
+  () => {
+    return api.get(
+      "/leaves/balances"
+    );
+  };
+
+export const updateLeaveBalance =
+  (employeeId, data) => {
+    return api.patch(
+      `/leaves/balance/${employeeId}`,
+      data
+    );
+  };
+
+  export const getMyLeaveBalance =
+  () => {
+    return api.get(
+      "/leaves/balance"
+    );
+  };

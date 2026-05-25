@@ -1,41 +1,63 @@
 import mongoose from "mongoose";
 
-const leaveBalanceSchema = new mongoose.Schema(
-  {
-    employee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+const leaveCategorySchema =
+  new mongoose.Schema(
+    {
+      total: {
+        type: Number,
+        default: 0,
+      },
 
-    year: {
-      type: Number,
-      required: true,
-    },
+      used: {
+        type: Number,
+        default: 0,
+      },
 
-    totalLeaves: {
-      type: Number,
-      default: 20,
+      remaining: {
+        type: Number,
+        default: 0,
+      },
     },
+    { _id: false }
+  );
 
-    usedLeaves: {
-      type: Number,
-      default: 0,
+const leaveBalanceSchema =
+  new mongoose.Schema(
+    {
+      employee: {
+        type:
+          mongoose.Schema.Types
+            .ObjectId,
+        ref: "User",
+        required: true,
+      },
+
+      year: {
+        type: Number,
+        required: true,
+      },
+
+      sickLeave:
+        leaveCategorySchema,
+
+      casualLeave:
+        leaveCategorySchema,
+
+      paidLeave:
+        leaveCategorySchema,
+
+      compOff:
+        leaveCategorySchema,
     },
+    {
+      timestamps: true,
+    }
+  );
 
-    remainingLeaves: {
-      type: Number,
-      default: 20,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const LeaveBalance = mongoose.model(
-  "LeaveBalance",
-  leaveBalanceSchema
-);
+const LeaveBalance =
+  mongoose.model(
+    "LeaveBalance",
+    leaveBalanceSchema
+  );
 
 export default LeaveBalance;

@@ -1,23 +1,29 @@
 import express from "express";
 
-import authMiddleware from "../middlewares/authMiddleware.js";
+import {
+  protect,
+} from "../middlewares/authMiddleware.js";
 
 import roleMiddleware from "../middlewares/roleMiddleware.js";
 
-import { assignLeaveBalance,getMyLeaveBalance } from "../controllers/leaveBalanceController.js";
+import {
+  assignLeaveBalance,
+  getMyLeaveBalance,
+} from "../controllers/leaveBalanceController.js";
 
-const router = express.Router();
+const router =
+  express.Router();
 
 router.get(
   "/my",
-  authMiddleware,
+  protect,
   roleMiddleware("employee"),
   getMyLeaveBalance
 );
 
 router.post(
   "/assign",
-  authMiddleware,
+  protect,
   roleMiddleware("admin"),
   assignLeaveBalance
 );

@@ -1,39 +1,79 @@
 import express from "express";
 
-import authMiddleware from "../middlewares/authMiddleware.js";
+import {
+  protect,
+  adminOnly,
+} from "../middlewares/authMiddleware.js";
 
 import roleMiddleware from "../middlewares/roleMiddleware.js";
 
-import { applyLeave,getMyLeaves,getAllLeaves,updateLeaveStatus } from "../controllers/leaveController.js";
+import {
+  applyLeave,
+  getMyLeaves,
+  getAllLeaves,
+  updateLeaveStatus,
+  getMyLeaveBalance,
+  updateLeaveBalance,
+  getAllLeaveBalances,
+  grantCompOff,
+} from "../controllers/leaveController.js";
 
-const router = express.Router();
+const router =
+  express.Router();
 
 router.get(
   "/my",
-  authMiddleware,
+  protect,
   roleMiddleware("employee"),
   getMyLeaves
 );
 
 router.get(
   "/",
-  authMiddleware,
+  protect,
   roleMiddleware("admin"),
   getAllLeaves
 );
 
+router.get(
+  "/balance",
+  protect,
+  getMyLeaveBalance
+);
+
+router.get(
+  "/balances",
+  protect,
+  adminOnly,
+  getAllLeaveBalances
+);
+
 router.post(
   "/apply",
-  authMiddleware,
+  protect,
   roleMiddleware("employee"),
   applyLeave
 );
 
 router.put(
   "/:id/status",
-  authMiddleware,
+  protect,
   roleMiddleware("admin"),
   updateLeaveStatus
+);
+
+router.patch(
+  "/balance/:employeeId",
+  protect,
+  adminOnly,
+  updateLeaveBalance
+);
+
+router.patch(
+  "/comp-off/:employeeId",
+  protect,
+  adminOnly,
+  grantCompOff
 );
 
 export default router;
