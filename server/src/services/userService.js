@@ -70,41 +70,34 @@ export const createUserService =
           : 0,
       isActive: true,
     });
+    await LeaveBalance.create({
+      employee: user._id,
+      year: new Date().getFullYear(),
 
-    if (role === "employee") {
-      const currentYear =
-        new Date().getFullYear();
+      sickLeave: {
+        total: 10,
+        used: 0,
+        remaining: 10,
+      },
 
-      await LeaveBalance.create({
-        employee: user._id,
+      casualLeave: {
+        total: 8,
+        used: 0,
+        remaining: 8,
+      },
 
-        year: currentYear,
+      paidLeave: {
+        total: 12,
+        used: 0,
+        remaining: 12,
+      },
 
-        sickLeave: {
-          total: 10,
-          used: 0,
-          remaining: 10,
-        },
-
-        casualLeave: {
-          total: 5,
-          used: 0,
-          remaining: 5,
-        },
-
-        paidLeave: {
-          total: 12,
-          used: 0,
-          remaining: 12,
-        },
-
-        compOff: {
-          total: 0,
-          used: 0,
-          remaining: 0,
-        },
-      });
-    }
+      compOff: {
+        total: 0,
+        used: 0,
+        remaining: 0,
+      },
+    });
 
     return {
       id: user._id,

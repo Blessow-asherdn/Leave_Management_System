@@ -11,10 +11,12 @@ const leaveSchema = new mongoose.Schema(
     leaveType: {
       type: String,
       enum: [
-    "Sick Leave",
-    "Casual Leave",
-    "Paid Leave",
-    "Comp Off"],
+        "Sick Leave",
+        "Casual Leave",
+        "Paid Leave",
+        "Comp Off",
+        "Unpaid Leave",
+      ],
       required: true,
     },
 
@@ -41,13 +43,49 @@ const leaveSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Pending", "Approved", "Rejected"],
+      enum: [
+  "Pending",
+  "Approved",
+  "Rejected",
+  "Revoked",
+],
       default: "Pending",
     },
 
     adminComment: {
       type: String,
       default: "",
+    },
+    leaveBreakdown: {
+      casualLeave: {
+        type: Number,
+        default: 0,
+      },
+
+      paidLeave: {
+        type: Number,
+        default: 0,
+      },
+
+      sickLeave: {
+        type: Number,
+        default: 0,
+      },
+
+      compOff: {
+        type: Number,
+        default: 0,
+      },
+
+      unpaidLeave: {
+        type: Number,
+        default: 0,
+      },
+    },
+
+    isUnpaidLeave: {
+      type: Boolean,
+      default: false,
     },
   },
   {

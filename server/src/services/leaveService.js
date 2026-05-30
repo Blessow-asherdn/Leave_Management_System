@@ -1,4 +1,5 @@
 import Leave from "../models/Leave.js";
+import User from "../models/users.js";
 
 import LeaveBalance from "../models/LeaveBalance.js";
 
@@ -6,13 +7,19 @@ import {
   LEAVE_TYPE_FIELDS,
 } from "../constants/leaveTypes.js";
 
+import {
+  createNotification,
+} from "./notificationService.js";
+
 export const applyLeaveService =
   async (userId, leaveData) => {
+
     const {
       leaveType,
       reason,
       fromDate,
       toDate,
+      acceptAdjustment,
     } = leaveData;
 
     const start =
@@ -31,9 +38,11 @@ export const applyLeaveService =
       ) + 1;
 
     if (totalDays <= 0) {
+
       throw new Error(
         "Invalid leave dates"
       );
+
     }
 
     const currentYear =
@@ -45,106 +54,358 @@ export const applyLeaveService =
         year: currentYear,
       });
 
-      if (!leaveBalance) {
-        throw new Error(
-          "Leave balance not assigned"
-        );
+    if (!leaveBalance) {
+
+      throw new Error(
+        "Leave balance not assigned"
+      );
+
+    }
+
+    const breakdown = {
+      casualLeave: 0,
+      paidLeave: 0,
+      sickLeave: 0,
+      compOff: 0,
+      unpaidLeave: 0,
+    };
+
+    let remainingDays =
+      totalDays;
+
+let leavePriority = [];
+
+if (leaveType === "Casual Leave") {
+
+  leavePriority = [
+    {
+      name: "casualLeave",
+      remaining:
+        leaveBalance.casualLeave.remaining,
+    },
+    {
+      name: "paidLeave",
+      remaining:
+        leaveBalance.paidLeave.remaining,
+    },
+    {
+      name: "sickLeave",
+      remaining:
+        leaveBalance.sickLeave.remaining,
+    },
+    {
+      name: "compOff",
+      remaining:
+        leaveBalance.compOff.remaining,
+    },
+  ];
+
+} else if (
+  leaveType === "Paid Leave"
+) {
+
+  leavePriority = [
+    {
+      name: "paidLeave",
+      remaining:
+        leaveBalance.paidLeave.remaining,
+    },
+    {
+      name: "casualLeave",
+      remaining:
+        leaveBalance.casualLeave.remaining,
+    },
+    {
+      name: "sickLeave",
+      remaining:
+        leaveBalance.sickLeave.remaining,
+    },
+    {
+      name: "compOff",
+      remaining:
+        leaveBalance.compOff.remaining,
+    },
+  ];
+
+} else if (
+  leaveType === "Sick Leave"
+) {
+
+  leavePriority = [
+    {
+      name: "sickLeave",
+      remaining:
+        leaveBalance.sickLeave.remaining,
+    },
+    {
+      name: "casualLeave",
+      remaining:
+        leaveBalance.casualLeave.remaining,
+    },
+    {
+      name: "paidLeave",
+      remaining:
+        leaveBalance.paidLeave.remaining,
+    },
+    {
+      name: "compOff",
+      remaining:
+        leaveBalance.compOff.remaining,
+    },
+  ];
+
+} else if (
+  leaveType === "Comp Off"
+) {
+
+  leavePriority = [
+    {
+      name: "compOff",
+      remaining:
+        leaveBalance.compOff.remaining,
+    },
+    {
+      name: "casualLeave",
+      remaining:
+        leaveBalance.casualLeave.remaining,
+    },
+    {
+      name: "paidLeave",
+      remaining:
+        leaveBalance.paidLeave.remaining,
+    },
+    {
+      name: "sickLeave",
+      remaining:
+        leaveBalance.sickLeave.remaining,
+    },
+  ];
+
+}else if (
+  leaveType === "Unpaid Leave"
+) {
+
+  leavePriority = [];
+
+}
+
+    for (const leave of leavePriority) {
+
+      if (
+        remainingDays <= 0
+      ) {
+        break;
       }
 
-      const leaveField =
-        LEAVE_TYPE_FIELDS[
-          leaveType
-        ];
-
-      if (!leaveField) {
-        throw new Error(
-          "Invalid leave type"
+      const usableDays =
+        Math.min(
+          leave.remaining,
+          remainingDays
         );
-      }
 
-      const selectedLeave =
-    leaveBalance[
-      leaveField
-    ];
+      breakdown[
+        leave.name
+      ] = usableDays;
 
-  if (
-    selectedLeave.remaining <
-    totalDays
-  ) {
-
-    const alternatives = [];
-
-    if (
-      leaveType !==
-        "Paid Leave" &&
-      leaveBalance.paidLeave
-        .remaining >=
-        totalDays
-    ) {
-      alternatives.push(
-        "Paid Leave"
-      );
+      remainingDays -=
+        usableDays;
     }
 
     if (
-      leaveType !==
-        "Comp Off" &&
-      leaveBalance.compOff
-        .remaining >=
-        totalDays
+      remainingDays > 0
     ) {
-      alternatives.push(
-        "Comp Off"
-      );
+
+      breakdown.unpaidLeave =
+        remainingDays;
+
     }
 
+    const selectedField =
+{
+  "Casual Leave":
+    "casualLeave",
+  "Paid Leave":
+    "paidLeave",
+  "Sick Leave":
+    "sickLeave",
+  "Comp Off":
+    "compOff",
+}[leaveType];
+
+const usedLeaveTypes =
+  Object.keys(breakdown)
+    .filter(
+      (key) =>
+        breakdown[key] > 0 &&
+        key !== "unpaidLeave"
+    );
+
+const hasAdjustment =
+  breakdown.unpaidLeave > 0 ||
+  usedLeaveTypes.length > 1 ||
+  (
+    usedLeaveTypes.length === 1 &&
+    usedLeaveTypes[0] !== selectedField
+  );
+console.log(
+  "LEAVE TYPE:",
+  leaveType
+);
+
+console.log(
+  "TOTAL DAYS:",
+  totalDays
+);
+
+console.log(
+  "BREAKDOWN:",
+  breakdown
+);
+
+console.log(
+  "HAS ADJUSTMENT:",
+  hasAdjustment
+);
+
+console.log(
+  "ACCEPT ADJUSTMENT:",
+  acceptAdjustment
+);
     if (
-      leaveType !==
-        "Casual Leave" &&
-      leaveBalance.casualLeave
-        .remaining >=
-        totalDays
-    ) {
-      alternatives.push(
-        "Casual Leave"
-      );
-    }
+  hasAdjustment &&
+  !acceptAdjustment
+) {
 
-    if (
-      leaveType !==
-        "Sick Leave" &&
-      leaveBalance.sickLeave
-        .remaining >=
-        totalDays
-    ) {
-      alternatives.push(
-        "Sick Leave"
-      );
-    }
+  const unpaidDays =
+    breakdown.unpaidLeave || 0;
 
-    const error =
-      new Error(
-        `${leaveType} balance is insufficient`
-      );
+  const recommendationText =
+    Object.entries(breakdown)
+      .filter(
+        ([, value]) => value > 0
+      )
+      .map(
+        ([key, value]) => {
 
-    error.suggestedLeaves =
-      alternatives;
+          const formatted =
+            key
+              .replace(
+                /([A-Z])/g,
+                " $1"
+              )
+              .replace(
+                /^./,
+                (str) =>
+                  str.toUpperCase()
+              );
 
-    throw error;
-  }
+          return `${formatted}: ${value} day(s)`;
+        }
+      )
+      .join(", ");
+
+  const error =
+    new Error(
+      unpaidDays > 0
+        ? `Insufficient balance. ${unpaidDays} day(s) will become unpaid leave.`
+        : "Leave adjustment required"
+    );
+
+  error.requiresConfirmation =
+    true;
+
+  error.breakdown =
+    breakdown;
+
+  error.recommendation =
+    recommendationText;
+
+  error.unpaidDays =
+    unpaidDays;
+
+  throw error;
+}
 
     const leave =
       await Leave.create({
         employee: userId,
+
         leaveType,
+
         reason,
+
         fromDate,
+
         toDate,
+
         totalDays,
+
+        leaveBreakdown:
+          breakdown,
+
+        isUnpaidLeave:
+          breakdown.unpaidLeave >
+          0,
       });
+
+    const employee =
+      await User.findById(
+        userId
+      );
+
+    const breakdownText =
+      Object.entries(
+        breakdown
+      )
+        .filter(
+          ([, value]) =>
+            value > 0
+        )
+        .map(
+          ([key, value]) =>
+            `${key}: ${value}`
+        )
+        .join(", ");
+
+    await createNotification({
+      user: userId,
+
+      title:
+        "Leave Request Submitted",
+
+      message: `Leave Breakdown → ${breakdownText}`,
+
+      type: "leave",
+    });
+
+    const admins =
+      await User.find({
+        role: "admin",
+      });
+
+    for (const admin of admins) {
+
+      await createNotification({
+        user: admin._id,
+
+        title:
+          "New Leave Request",
+
+        message:
+          breakdown.unpaidLeave >
+          0
+            ? `${employee.name} applied leave with unpaid leave days`
+            : `${employee.name} applied for leave`,
+
+        type: "leave",
+      });
+
+    }
 
     return leave;
   };
+
+
 
 export const getMyLeavesService =
   async (userId) => {
@@ -206,6 +467,33 @@ export const updateLeaveStatusService =
 
     await leave.save();
 
+    const breakdownText =
+      Object.entries(
+        leave.leaveBreakdown
+      )
+        .filter(
+          ([, value]) =>
+            value > 0
+        )
+        .map(
+          ([key, value]) =>
+            `${key}: ${value}`
+        )
+        .join(", ");
+
+    await createNotification({
+      user: leave.employee,
+
+      title: `Leave ${status}`,
+
+      message:
+        status === "Approved"
+          ? `Approved Leave → ${breakdownText}`
+          : `Rejected Leave Request`,
+
+      type: "leave",
+    });
+
     if (status === "Approved") {
       const currentYear =
         new Date().getFullYear();
@@ -230,17 +518,203 @@ export const updateLeaveStatusService =
           leave.leaveType
         ];
 
-      leaveBalance[
-        leaveField
-      ].used +=
-        leave.totalDays;
+      const breakdown =
+        leave.leaveBreakdown || {
+          casualLeave: 0,
+          paidLeave: 0,
+          sickLeave: 0,
+          compOff: 0,
+        };
 
-      leaveBalance[
-        leaveField
-      ].remaining -=
-        leave.totalDays;
+      if (
+        !leave.leaveBreakdown
+      ) {
+
+        const leaveField =
+          LEAVE_TYPE_FIELDS[
+            leave.leaveType
+          ];
+
+        breakdown[
+          leaveField
+        ] = leave.totalDays;
+      }
+
+      const updateLeave =
+        (
+          field,
+          days
+        ) => {
+
+          if (days > 0) {
+
+            leaveBalance[
+              field
+            ].used += days;
+
+            leaveBalance[
+              field
+            ].remaining -=
+              days;
+          }
+        };
+
+      updateLeave(
+        "casualLeave",
+        breakdown.casualLeave
+      );
+
+      updateLeave(
+        "paidLeave",
+        breakdown.paidLeave
+      );
+
+      updateLeave(
+        "sickLeave",
+        breakdown.sickLeave
+      );
+
+      updateLeave(
+        "compOff",
+        breakdown.compOff
+      );
+      await leaveBalance.save();
+    }
+
+    return leave;
+  };
+
+export const revokeLeaveService =
+  async (
+    leaveId,
+    userId
+  ) => {
+
+    const leave =
+      await Leave.findById(
+        leaveId
+      );
+
+    if (!leave) {
+
+      throw new Error(
+        "Leave not found"
+      );
+
+    }
+
+    if (
+      leave.status ===
+      "Revoked"
+    ) {
+
+      throw new Error(
+        "Leave already revoked"
+      );
+
+    }
+
+    const currentYear =
+      new Date().getFullYear();
+
+    const leaveBalance =
+      await LeaveBalance.findOne({
+        employee:
+          leave.employee,
+        year: currentYear,
+      });
+
+    if (
+      leave.status ===
+        "Approved" &&
+      leaveBalance
+    ) {
+
+      const breakdown =
+        leave.leaveBreakdown;
+
+      const restoreLeave =
+        (
+          field,
+          days
+        ) => {
+
+          if (days > 0) {
+
+            leaveBalance[
+              field
+            ].used -= days;
+
+            leaveBalance[
+              field
+            ].remaining +=
+              days;
+          }
+        };
+
+      restoreLeave(
+        "casualLeave",
+        breakdown.casualLeave
+      );
+
+      restoreLeave(
+        "paidLeave",
+        breakdown.paidLeave
+      );
+
+      restoreLeave(
+        "sickLeave",
+        breakdown.sickLeave
+      );
+
+      restoreLeave(
+        "compOff",
+        breakdown.compOff
+      );
 
       await leaveBalance.save();
+    }
+
+    leave.status =
+      "Revoked";
+
+    await leave.save();
+
+    await createNotification({
+      user: leave.employee,
+
+      title:
+        "Leave Revoked",
+
+      message:
+        "Your leave was revoked and balance restored",
+
+      type: "leave",
+    });
+
+    const employee =
+      await User.findById(
+        leave.employee
+      );
+
+    const admins =
+      await User.find({
+        role: "admin",
+      });
+
+    for (const admin of admins) {
+
+      await createNotification({
+        user: admin._id,
+
+        title:
+          "Leave Revoked",
+
+        message: `${employee.name} revoked a leave request`,
+
+        type: "leave",
+      });
+
     }
 
     return leave;
@@ -265,6 +739,7 @@ export const updateLeaveStatusService =
 
     return leaveBalance;
   };
+
 
 export const updateLeaveBalanceService =
   async (
@@ -352,27 +827,22 @@ export const updateLeaveBalanceService =
 
 export const getAllLeaveBalancesService =
   async () => {
-    const currentYear =
-      new Date().getFullYear();
 
     const balances =
-      await LeaveBalance.find({
-        year: currentYear,
-      }).populate(
-        "employee",
-        "name email"
-      );
+      await LeaveBalance.find()
+        .populate(
+          "employee",
+          "name email"
+        );
 
-    return balances.filter(
-      (balance) =>
-        balance.employee
-    );
+    return balances;
   };
 
 export const grantCompOffService =
   async (
     employeeId,
-    days
+    days,
+    reason
   ) => {
     const currentYear =
       new Date().getFullYear();
@@ -405,6 +875,17 @@ export const grantCompOffService =
       Number(days);
 
     await leaveBalance.save();
+
+    await createNotification({
+      user: employeeId,
+
+      title:
+        "Comp Off Granted",
+
+      message: `${days} Comp Off day(s) granted. Reason: ${reason}`,
+
+      type: "leave",
+    });
 
     return leaveBalance;
   };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const UpdateBalanceModal = ({
   isOpen,
@@ -7,71 +7,96 @@ const UpdateBalanceModal = ({
   employee,
   currentBalance,
 }) => {
+
   const [formData, setFormData] =
     useState({
-      sickLeave:
-        currentBalance
-          ?.sickLeave?.total || 0,
-
-      casualLeave:
-        currentBalance
-          ?.casualLeave?.total || 0,
-
-      paidLeave:
-        currentBalance
-          ?.paidLeave?.total || 0,
-
-      compOff:
-        currentBalance
-          ?.compOff?.total || 0,
+      sickLeave: 0,
+      casualLeave: 0,
+      paidLeave: 0,
+      compOff: 0,
     });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]:
-        e.target.value,
-    });
-  };
+  useEffect(() => {
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    if (currentBalance) {
 
-    onSave(formData);
-  };
+      setFormData({
+        sickLeave:
+          currentBalance
+            ?.sickLeave?.total || 0,
+
+        casualLeave:
+          currentBalance
+            ?.casualLeave?.total || 0,
+
+        paidLeave:
+          currentBalance
+            ?.paidLeave?.total || 0,
+
+        compOff:
+          currentBalance
+            ?.compOff?.total || 0,
+      });
+
+    }
+
+  }, [currentBalance]);
+
+  const handleChange =
+    (e) => {
+
+      setFormData({
+        ...formData,
+        [e.target.name]:
+          Number(e.target.value),
+      });
+    };
+
+  const handleSubmit =
+    (e) => {
+
+      e.preventDefault();
+
+      onSave(formData);
+    };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+
       <div className="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl">
+
         <div className="flex justify-between items-center mb-8">
+
           <div>
+
             <h2 className="text-3xl font-bold text-black">
               Update Leave Balance
             </h2>
 
-            <p className="text-gray-500 mt-1">
-              {
-                employee?.name
-              }
+            <p className="text-gray-500 text-lg mt-1">
+              {employee?.name}
             </p>
+
           </div>
 
           <button
             onClick={onClose}
-            className="text-2xl font-bold text-gray-500 hover:text-black"
+            className="text-3xl text-gray-500 hover:text-black"
           >
             ×
           </button>
+
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-        >
-          <div className="grid grid-cols-2 gap-5 mb-6">
+        <form onSubmit={handleSubmit}>
+
+          <div className="grid grid-cols-2 gap-5 mb-8">
+
             <div>
-              <label className="block mb-2 font-semibold text-black">
+
+              <label className="block text-lg font-semibold mb-2">
                 Sick Leave
               </label>
 
@@ -84,13 +109,14 @@ const UpdateBalanceModal = ({
                 onChange={
                   handleChange
                 }
-                min="0"
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg"
               />
+
             </div>
 
             <div>
-              <label className="block mb-2 font-semibold text-black">
+
+              <label className="block text-lg font-semibold mb-2">
                 Casual Leave
               </label>
 
@@ -103,13 +129,14 @@ const UpdateBalanceModal = ({
                 onChange={
                   handleChange
                 }
-                min="0"
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg"
               />
+
             </div>
 
             <div>
-              <label className="block mb-2 font-semibold text-black">
+
+              <label className="block text-lg font-semibold mb-2">
                 Paid Leave
               </label>
 
@@ -122,13 +149,14 @@ const UpdateBalanceModal = ({
                 onChange={
                   handleChange
                 }
-                min="0"
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg"
               />
+
             </div>
 
             <div>
-              <label className="block mb-2 font-semibold text-black">
+
+              <label className="block text-lg font-semibold mb-2">
                 Comp Off
               </label>
 
@@ -141,32 +169,38 @@ const UpdateBalanceModal = ({
                 onChange={
                   handleChange
                 }
-                min="0"
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg"
               />
+
             </div>
+
           </div>
 
           <div className="flex justify-end gap-4">
+
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100"
+              className="px-6 py-3 rounded-xl border border-gray-300 text-lg"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-800"
+              className="px-6 py-3 rounded-xl bg-black text-white text-lg"
             >
               Save Changes
             </button>
+
           </div>
+
         </form>
+
       </div>
+
     </div>
   );
 };
 
-export default UpdateBalanceModal;
+export default UpdateBalanceModal;  

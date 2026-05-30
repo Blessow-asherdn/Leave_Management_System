@@ -7,31 +7,53 @@ import {
   updateLeaveBalanceService,
   getAllLeaveBalancesService,
   grantCompOffService,
+  revokeLeaveService,
 } from "../services/leaveService.js";
 
-export const applyLeave = async (req, res) => {
+export const applyLeave = async (
+  req,
+  res
+) => {
+
   try {
-    const leave = await applyLeaveService(
-      req.user.id,
-      req.body
-    );
+
+    const leave =
+      await applyLeaveService(
+        req.user.id,
+        req.body
+      );
 
     res.status(201).json({
       success: true,
-      message: "Leave applied successfully",
+      message:
+        "Leave applied successfully",
       data: leave,
     });
-  }catch(error) {
+
+  } catch (error) {
+
     res.status(400).json({
       success: false,
 
       message:
         error.message,
 
-      suggestedLeaves:
-        error.suggestedLeaves || [],
+      requiresConfirmation:
+        error.requiresConfirmation ||
+        false,
+
+      breakdown:
+        error.breakdown || {},
+
+      recommendation:
+        error.recommendation || "",
+
+      unpaidDays:
+        error.unpaidDays || 0,
     });
+
   }
+
 };
 
 export const getMyLeaves = async (req, res) => {
@@ -96,20 +118,86 @@ export const updateLeaveStatus =
 
 export const getMyLeaveBalance =
   async (req, res) => {
+
     try {
+
+      console.log(
+        "REQ USER:",
+        req.user
+      );
+
+      if (!req.user) {
+
+        return res
+          .status(401)
+          .json({
+            message:
+              "Unauthorized",
+          });
+
+      }
+
       const balance =
         await getMyLeaveBalanceService(
           req.user.id
         );
 
+      if (!balance) {
+
+        return res
+          .status(404)
+          .json({
+            message:
+              "Leave balance not found",
+          });
+
+      }
+
       res.status(200).json(
         balance
       );
+
     } catch (error) {
+
+      console.log(
+        "BALANCE ERROR:",
+        error
+      );
+
       res.status(500).json({
         message:
           error.message,
       });
+
+    }
+  };
+
+export const revokeLeave =
+  async (req, res) => {
+
+    try {
+
+      const leave =
+        await revokeLeaveService(
+          req.params.id,
+          req.user.id
+        );
+
+      res.status(200).json({
+        success: true,
+        message:
+          "Leave revoked successfully",
+        data: leave,
+      });
+
+    } catch (error) {
+
+      res.status(400).json({
+        success: false,
+        message:
+          error.message,
+      });
+
     }
   };
 

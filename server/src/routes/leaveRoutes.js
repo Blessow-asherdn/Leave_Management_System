@@ -16,6 +16,7 @@ import {
   updateLeaveBalance,
   getAllLeaveBalances,
   grantCompOff,
+  revokeLeave,
 } from "../controllers/leaveController.js";
 
 const router =
@@ -74,6 +75,12 @@ router.patch(
   protect,
   adminOnly,
   grantCompOff
+);
+
+router.patch(
+  "/:id/revoke",
+  protect,
+  revokeLeave
 );
 
 export default router;

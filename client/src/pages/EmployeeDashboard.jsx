@@ -8,11 +8,7 @@ import ApplyLeaveForm from "../components/ApplyLeaveForm";
 
 import MyLeavesTable from "../components/MyLeavesTable";
 
-import {
-  applyLeave,
-  getMyLeaves,
-  getMyLeaveBalance,
-} from "../services/leaveService";
+import { applyLeave,getMyLeaves,getMyLeaveBalance } from "../services/leaveService";
 
 const EmployeeDashboard = () => {
 
@@ -60,76 +56,103 @@ const EmployeeDashboard = () => {
     }
   };
 
-  const fetchLeaveBalance =
-    async () => {
-      try {
+  const fetchLeaveBalance = async () => {
 
-        const response =
-          await getMyLeaveBalance();
+  try {
 
-        setLeaveBalance(
-          response.data
-        );
+    const response =
+      await getMyLeaveBalance();
 
-      } catch (error) {
+    console.log(
+      "FULL BALANCE RESPONSE:",
+      response
+    );
 
-        toast.error(
-          "Failed to fetch leave balance"
-        );
+    // AXIOS RESPONSE
 
-      }
-    };
+    const balanceData =
+      response?.data;
+
+    console.log(
+      "BALANCE DATA:",
+      balanceData
+    );
+
+    if (
+      !balanceData ||
+      balanceData.message
+    ) {
+
+      console.log(
+        "NO BALANCE FOUND"
+      );
+
+      return;
+    }
+
+    setLeaveBalance(
+      balanceData
+    );
+
+  } catch (error) {
+
+    console.log(
+      "BALANCE FETCH ERROR:",
+      error
+    );
+
+  }
+};
 
   const handleApplyLeave =
-    async (data) => {
+  async (data) => {
 
-      try {
+    try {
 
-        setLoading(true);
+      setLoading(true);
 
+      const response =
         await applyLeave(data);
 
-        toast.success(
-          "Leave applied successfully"
-        );
+      toast.success(
+        "Leave applied successfully"
+      );
 
-        fetchLeaves();
+      fetchLeaves();
 
-        fetchLeaveBalance();
+      fetchLeaveBalance();
 
-      } catch (error) {
+      return response;
 
-        const message =
-          error.response?.data?.message;
+    } catch (error) {
 
-        const suggestedLeaves =
-          error.response?.data
-            ?.suggestedLeaves;
+      // VERY IMPORTANT
+      // SEND CONFIRMATION ERRORS
+      // BACK TO ApplyLeaveForm
 
-        if (
-          suggestedLeaves &&
-          suggestedLeaves.length > 0
-        ) {
+      if (
+        error.response?.data
+          ?.requiresConfirmation
+      ) {
 
-          toast.warning(
-            `${message}. You can apply using: ${suggestedLeaves.join(", ")}`
-          );
-
-        } else {
-
-          toast.error(
-            message ||
-              "Failed to apply leave"
-          );
-
-        }
-
-      } finally {
-
-        setLoading(false);
+        throw error;
 
       }
-    };
+
+      toast.error(
+        error.response?.data
+          ?.message ||
+          "Failed to apply leave"
+      );
+
+      throw error;
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
 
   const filteredLeaves =
     leaves.filter((leave) => {
